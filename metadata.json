@@ -1,0 +1,5 @@
+{
+  "name": "Loan Tracker (Hutang App)",
+  "description": "A collaborative debt management application for Firman, Tommy, and Anggi with role-based access, automated period tracking, and visual reports.",
+  "requestFramePermissions": []
+}
