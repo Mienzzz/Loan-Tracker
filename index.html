@@ -44,6 +44,18 @@
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
         }
+        /* HILANGKAN BRANDING GOOGLE AI */
+        footer,
+        .google-ai,
+        .google-ai-footer,
+        .ai-footer,
+        .powered-by-google,
+        a[href*="google.ai"],
+        a[href*="ai.google.dev"],
+        a[href*="gemini.google.com"],
+        div:has(> a[href*="google.ai"]) {
+            display: none !important;
+        }
     </style>
 <script type="importmap">
 {
