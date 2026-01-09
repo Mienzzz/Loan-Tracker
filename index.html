@@ -6,14 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Loan Tracker</title>
     
-    <!-- PWA Meta Tags -->
+    <!-- PWA Basic -->
     <meta name="theme-color" content="#4338ca">
-    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/10042/10042167.png">
+    
+    <!-- iOS Specific -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="LoanTracker">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/10042/10042167.png">
-    <link rel="manifest" href="manifest.json">
     
+    <!-- Microsoft / General -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="LoanTracker">
+    <meta name="msapplication-TileColor" content="#4338ca">
+    <meta name="msapplication-tap-highlight" content="no">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -24,12 +33,18 @@
             user-select: none;
             -webkit-user-select: none;
         }
+        /* Menghilangkan scrollbar tapi tetap bisa scroll */
         ::-webkit-scrollbar {
             display: none;
         }
         * {
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
+        }
+        /* Menghindari safe area di HP modern (notch) */
+        #root {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
     </style>
 <script type="importmap">
@@ -48,13 +63,21 @@
 <body>
     <div id="root"></div>
     <script>
-        if ('serviceWorker' in navigator) {
+        // Service Worker hanya aktif di HTTPS atau localhost
+        if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('SW Registered'))
-                    .catch(err => console.log('SW Failed', err));
+                // Menggunakan path relatif 'sw.js' adalah cara paling kompatibel 
+                // agar browser menentukan scope berdasarkan folder tempat file index.html berada.
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => {
+                        console.log('Service Worker aktif. Scope:', reg.scope);
+                    })
+                    .catch(err => {
+                        console.warn('Gagal registrasi SW (kemungkinan batasan origin preview):', err.message);
+                    });
             });
         }
     </script>
+    <script type="module" src="index.tsx"></script>
 </body>
 </html>
