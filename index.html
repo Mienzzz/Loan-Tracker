@@ -7,20 +7,20 @@
     <title>Loan Tracker</title>
     
     <!-- PWA Basic -->
-    <meta name="theme-color" content="#4338ca">
+    <meta name="theme-color" content="#1e3a8a">
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/10042/10042167.png">
+    <link rel="icon" type="image/png" href="icon.png">
     
     <!-- iOS Specific -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="LoanTracker">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/10042/10042167.png">
+    <link rel="apple-touch-icon" href="icon.png">
     
     <!-- Microsoft / General -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="LoanTracker">
-    <meta name="msapplication-TileColor" content="#4338ca">
+    <meta name="msapplication-TileColor" content="#1e3a8a">
     <meta name="msapplication-tap-highlight" content="no">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,7 +33,6 @@
             user-select: none;
             -webkit-user-select: none;
         }
-        /* Menghilangkan scrollbar tapi tetap bisa scroll */
         ::-webkit-scrollbar {
             display: none;
         }
@@ -41,7 +40,6 @@
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
         }
-        /* Menghindari safe area di HP modern (notch) */
         #root {
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
@@ -63,7 +61,6 @@
 <body>
     <div id="root"></div>
     <script>
-        // Registrasi Service Worker yang memenuhi syarat PWA Installable
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
@@ -71,7 +68,7 @@
                         console.log('PWA Service Worker terdaftar. Scope:', reg.scope);
                     })
                     .catch(err => {
-                        console.warn('PWA Service Worker gagal (Mungkin batasan lingkungan preview):', err.message);
+                        console.warn('PWA Service Worker gagal:', err.message);
                     });
             });
         }
