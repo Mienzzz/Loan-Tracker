@@ -1,55 +1,93 @@
-const CACHE_NAME = 'loan-tracker-v4';
-const STATIC_ASSETS = [
+
+const CACHE_NAME = 'loan-tracker-v5';
+const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+  'https://cdn.tailwindcss.com',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
+  'https://cdn-icons-png.flaticon.com/512/10042/10042167.png'
 ];
 
-// Install Event - Caching static assets
+// Install: Simpan aset inti ke dalam cache
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Caching shell assets');
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('Pre-caching assets...');
+        return cache.addAll(PRECACHE_ASSETS);
+      })
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-// Activate Event - Clean up old caches
+// Activate: Bersihkan cache versi lama
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Removing old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  return self.clients.claim();
 });
 
-// Fetch Event - Stale-While-Revalidate Strategy
+// Fetch: Strategi Caching
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const { request } = event;
+  const url = new URL(request.url);
 
-  // Lewati request skema non-http (seperti chrome-extension)
-  if (!event.request.url.startsWith('http')) return;
+  // 1. Strategi untuk Navigasi (Halaman Utama)
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() => {
+        return caches.match('./index.html') || caches.match('./');
+      })
+    );
+    return;
+  }
 
-  event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.match(event.request).then((cachedResponse) => {
-        const fetchedResponse = fetch(event.request).then((networkResponse) => {
+  // 2. Strategi Cache-First untuk Aset Statis (Font, CDN, Ikon)
+  if (
+    request.destination === 'font' || 
+    request.destination === 'image' ||
+    url.hostname === 'cdn.tailwindcss.com' ||
+    url.hostname === 'fonts.googleapis.com' ||
+    url.hostname === 'fonts.gstatic.com'
+  ) {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
+        
+        return fetch(request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
-            cache.put(event.request, networkResponse.clone());
+            const cacheCopy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, cacheCopy));
           }
           return networkResponse;
-        }).catch(() => {
-          return cachedResponse;
         });
+      })
+    );
+    return;
+  }
 
-        return cachedResponse || fetchedResponse;
-      });
+  // 3. Strategi Network-First (Stale-While-Revalidate) untuk sisa request lainnya
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      const fetchPromise = fetch(request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const cacheCopy = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, cacheCopy));
+        }
+        return networkResponse;
+      }).catch(() => null);
+
+      return cachedResponse || fetchPromise;
     })
   );
 });

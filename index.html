@@ -63,17 +63,15 @@
 <body>
     <div id="root"></div>
     <script>
-        // Service Worker hanya aktif di HTTPS atau localhost
-        if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        // Registrasi Service Worker yang memenuhi syarat PWA Installable
+        if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                // Menggunakan path relatif 'sw.js' adalah cara paling kompatibel 
-                // agar browser menentukan scope berdasarkan folder tempat file index.html berada.
                 navigator.serviceWorker.register('sw.js')
                     .then(reg => {
-                        console.log('Service Worker aktif. Scope:', reg.scope);
+                        console.log('PWA Service Worker terdaftar. Scope:', reg.scope);
                     })
                     .catch(err => {
-                        console.warn('Gagal registrasi SW (kemungkinan batasan origin preview):', err.message);
+                        console.warn('PWA Service Worker gagal (Mungkin batasan lingkungan preview):', err.message);
                     });
             });
         }
